@@ -37,7 +37,7 @@
 | Name        | Type          | Settings                      | References                    | Note                           |
 |-------------|---------------|-------------------------------|-------------------------------|--------------------------------|
 | **id** | INTEGER | 🔑 PK, not null, unique, autoincrement |  | |
-| **name** | VARCHAR(128) | not null |  | |
+| **name** | VARCHAR(128) | not null, unique |  | |
 | **measurement_unit** | VARCHAR(32) | not null |  | | 
 
 
