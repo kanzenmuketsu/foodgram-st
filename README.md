@@ -58,9 +58,9 @@
 | user_index_0 |  | cart, favorite |
 ## Relationships
 
-- **recepi to ingredient**: one_to_many
-- **user to recepi**: one_to_many
-- **user to recepi**: one_to_many
+- **recepi to ingredient**: many_to_many
+- **user to recepi**: many_to_many
+- **user to recepi**: many_to_many
 
 ## Database Diagram
 
