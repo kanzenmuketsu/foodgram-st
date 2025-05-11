@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'posts.apps.PostsConfig',
-    'pages.apps.PagesConfig'
+    'pages.apps.PagesConfig',
+    'profiles'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'itog.urls'
+
+AUTH_USER_MODEL = 'profiles.Profile'
 
 TEMPLATES = [
     {
@@ -106,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
