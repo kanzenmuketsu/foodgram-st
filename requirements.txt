@@ -1,0 +1,6 @@
+asgiref==3.8.1
+Django==3.2.16
+legacy-cgi==2.6.3
+pillow==11.2.1
+pytz==2025.2
+sqlparse==0.5.3

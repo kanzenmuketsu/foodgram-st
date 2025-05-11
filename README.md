@@ -46,12 +46,16 @@
 | Name        | Type          | Settings                      | References                    | Note                           |
 |-------------|---------------|-------------------------------|-------------------------------|--------------------------------|
 | **id** | INTEGER | 🔑 PK, not null, unique, autoincrement |  | |
-| **avatar** | BLOB | null |  | |
+| **avatar** | BLOB | not null |  | |
 | **cart** | INTEGER | not null | fk_user_cart_recepi | |
 | **favorite** | INTEGER | not null | fk_user_favorite_recepi | |
 | **django default user** | BLOB | not null |  | | 
 
 
+#### Indexes
+| Name | Unique | Fields |
+|------|--------|--------|
+| user_index_0 |  | cart, favorite |
 ## Relationships
 
 - **recepi to ingredient**: one_to_many
@@ -77,7 +81,6 @@ erDiagram
 		BOOLEAN is_favorited
 		BOOLEAN is_in_shopping_cart
 	}
-
 	ingredient {
 		INTEGER id
 		VARCHAR(128) name
