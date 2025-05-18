@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from posts.models import Recepi
+from django.conf import settings
 
 
 class Profile(AbstractUser):
@@ -26,9 +27,9 @@ class Profile(AbstractUser):
         null=False,
         blank=False
     )
-    favorite = models.ManyToManyField(
+    bookmared = models.ManyToManyField(
         Recepi,
-        related_name='favorite',
+        related_name='bookmared',
         verbose_name='Избранное',
         blank=True
     )
@@ -37,6 +38,12 @@ class Profile(AbstractUser):
         related_name='cart',
         verbose_name='Корзина',
         blank=True
+    )
+    followers = models.ManyToManyField(
+        'self',
+        related_name='flws',
+        blank=True,
+        symmetrical=False
     )
     REQUIRED_FIELDS = ["first_name", "last_name", "email"]
 

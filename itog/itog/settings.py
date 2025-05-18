@@ -69,6 +69,18 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
 
+DJOSER = {
+    'HIDE_USERS': False,
+    'PERMISSIONS': {
+        'user': ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
+        'user_list': ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
+    },
+    'SERIALIZERS': {
+        'user': 'profiles.serializers.UserSerializer',
+        'current_user': 'profiles.serializers.UserSerializer',
+    }
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',

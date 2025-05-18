@@ -4,11 +4,13 @@ from .models import Profile
 from django.contrib import auth
 
 UserAdmin.fieldsets += (
-    # Добавляем кортеж, где первый элемент — это название раздела в админке,
-    # а второй элемент — словарь, где под ключом fields можно указать нужные поля.
-    ("Еще какие-то данные", {'fields': ('avatar', 'cart', 'favorite')}),
+    ("Еще какие-то данные", {'fields': (
+        'avatar',
+        'cart',
+        'bookmared',
+        'followers'
+    )}),
 )
-UserAdmin.filter_horizontal += ('cart', 'favorite')
-UserAdmin.list_display = ('username', 'email', 'is_staff', 'date_joined')
+UserAdmin.filter_horizontal += ('cart', 'bookmared', 'followers')
 admin.site.register(Profile, UserAdmin)
 admin.site.unregister(auth.models.Group)
