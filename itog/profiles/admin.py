@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import Profile
+from django.contrib import auth
 
 UserAdmin.fieldsets += (
     # Добавляем кортеж, где первый элемент — это название раздела в админке,
@@ -10,3 +11,4 @@ UserAdmin.fieldsets += (
 UserAdmin.filter_horizontal += ('cart', 'favorite')
 UserAdmin.list_display = ('username', 'email', 'is_staff', 'date_joined')
 admin.site.register(Profile, UserAdmin)
+admin.site.unregister(auth.models.Group)
