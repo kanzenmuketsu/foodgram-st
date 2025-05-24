@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from posts.models import Recepi
-from django.conf import settings
 
 
 class Profile(AbstractUser):
