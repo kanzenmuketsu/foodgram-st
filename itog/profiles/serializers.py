@@ -1,10 +1,12 @@
 from djoser.serializers import UserSerializer \
     as BaseUserRegistrationSerializer
 from rest_framework import serializers
+from drf_extra_fields.fields import Base64ImageField
 
 
 class UserSerializer(BaseUserRegistrationSerializer):
     is_subsribed = serializers.SerializerMethodField()
+    avatar = Base64ImageField()
 
     class Meta(BaseUserRegistrationSerializer.Meta):
         fields = (
@@ -14,7 +16,6 @@ class UserSerializer(BaseUserRegistrationSerializer):
             'first_name',
             'last_name',
             'avatar',
-            'cart',
             'is_subsribed'
         )
 
