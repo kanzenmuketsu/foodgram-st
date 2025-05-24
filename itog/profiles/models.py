@@ -23,8 +23,8 @@ class Profile(AbstractUser):
     avatar = models.ImageField(
         'Аватарка',
         upload_to='profile_avatars',
-        null=False,
-        blank=False
+        null=True,
+        blank=True
     )
     bookmared = models.ManyToManyField(
         Recepi,

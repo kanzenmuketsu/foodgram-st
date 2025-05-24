@@ -1,4 +1,4 @@
-from djoser.serializers import UserCreateSerializer \
+from djoser.serializers import UserSerializer \
     as BaseUserRegistrationSerializer
 from rest_framework import serializers
 
@@ -28,14 +28,3 @@ class UserSerializer(BaseUserRegistrationSerializer):
         request = self.context.get('request', None)
         if request:
             return request.user
-
-    def get_fields(self):
-        request = self.context.get('request', None)
-        print(request)
-        if request.user.is_anonymous:
-            self.Meta.fields = (
-                'id',
-                'username',
-                'is_subsribed'
-            )
-        return super().get_fields()
