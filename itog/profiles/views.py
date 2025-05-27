@@ -15,11 +15,15 @@ class CustomUserViewSet(UserViewSet):
             user.avatar = None
             user.save()
             return Response({'status': 'avatar deleted'})
-
         if serializer.is_valid():
-            user.avatar = serializer.validated_data['avatar']
-            user.save()
-            return Response({'status': 'avatar set'})
+            avatar = serializer.validated_data.get('avatar', False)
+            if avatar:
+                user.avatar = avatar
+                user.save()
+                return Response({'status': 'avatar set'})
+            else:
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
