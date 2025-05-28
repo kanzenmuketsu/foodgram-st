@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from posts.models import Recepi
+from posts.models import Recipi
 
 
 class Profile(AbstractUser):
@@ -27,13 +27,13 @@ class Profile(AbstractUser):
         blank=True
     )
     bookmared = models.ManyToManyField(
-        Recepi,
+        Recipi,
         related_name='bookmared',
         verbose_name='Избранное',
         blank=True
     )
     cart = models.ManyToManyField(
-        Recepi,
+        Recipi,
         related_name='cart',
         verbose_name='Корзина',
         blank=True

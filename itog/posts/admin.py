@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recepi
+from .models import Ingredient, Recipi, RecipiIngredientAmount
+
+
+class RecipiIngredientAmountInline(admin.TabularInline):
+    model = RecipiIngredientAmount
+    extra = 1
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -12,14 +17,14 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('measurement_unit',)
 
 
-class RecepiAdmin(admin.ModelAdmin):
+class RecipiAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'author'
     )
+    inlines = [RecipiIngredientAmountInline]
     readonly_fields = ('favorite_entries',)
     search_fields = ('name', 'author')
-    filter_horizontal = ('ingredients',)
 
     @admin.display(description='Добавлено в избранное')
     def favorite_entries(self, obj):
@@ -27,4 +32,4 @@ class RecepiAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Recepi, RecepiAdmin)
+admin.site.register(Recipi, RecipiAdmin)

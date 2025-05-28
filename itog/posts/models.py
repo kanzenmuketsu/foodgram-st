@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class Ingredient(models.Model):
@@ -18,7 +19,28 @@ class Ingredient(models.Model):
         return self.name
 
 
-class Recepi(models.Model):
+class RecipiIngredientAmount(models.Model):
+    recipi = models.ForeignKey(
+        'Recipi',
+        on_delete=models.CASCADE,
+        related_name='RRR'
+    )
+    Ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='amounttt'
+    )
+    amount = models.FloatField(validators=[MinValueValidator(0.0)])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipi", "Ingredient"], name="unique_Ing_recipi"
+            )
+        ]
+
+
+class Recipi(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -29,14 +51,15 @@ class Recepi(models.Model):
     )
     image = models.ImageField(
         'Фото',
-        upload_to='recepi_images'
+        upload_to='recipi_images'
     )
     text = models.TextField(
         verbose_name='Описание', max_length=255
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        verbose_name='Список ингредиентов'
+        verbose_name='Список ингредиентов',
+        through='RecipiIngredientAmount'
     )
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления',
