@@ -17,7 +17,14 @@ class RecipiViewSet(ModelViewSet):
     serializer_class = RecipiSerializer
 
     def get_queryset(self):
+        qset = Recipi.objects.all()
         pk = self.request.query_params.get('author', False)
+        bookmared = self.request.query_params.get('is_favorited', False)
+        cart = self.request.query_params.get('cart', False)
         if pk:
-            return Recipi.objects.filter(author=pk)
-        return Recipi.objects.all()
+            qset = qset.filter(author=pk)
+        if bookmared:
+            qset = qset.filter(bookmared__exact=self.request.user.id)
+        if cart:
+            qset = qset.filter(cart__exact=self.request.user.id)
+        return qset
