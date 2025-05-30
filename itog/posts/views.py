@@ -1,6 +1,16 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from .models import Ingredient, Recipi
-from .serializers import IngredientSerializer, RecipiSerializer
+from rest_framework.views import APIView
+from .models import Ingredient, Recipi, ShortUrl
+from .serializers import (
+    IngredientSerializer, RecipiSerializer,
+    RecipiShortLinkSerializer
+)
+
+from django.shortcuts import get_object_or_404, redirect
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import action
+import uuid
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -28,3 +38,36 @@ class RecipiViewSet(ModelViewSet):
         if cart:
             qset = qset.filter(cart__exact=self.request.user.id)
         return qset
+
+    @action(detail=True, methods=['get'], url_path='get-link')
+    def get_link(self, request, *args, **kwargs):
+        obj = self.get_object()
+        serializer = RecipiShortLinkSerializer(
+            obj, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+            try:
+                link = obj.short_link
+            except Exception:
+                link = False
+            if link:
+                print(serializer.data)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                short_link = uuid.uuid4().hex[:4]
+                obj.short_link = ShortUrl.objects.create(short_link=short_link)
+                obj.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+
+
+class RedirectShortLinkView(APIView):
+    def get(self, request, linkID):
+        shorturl = get_object_or_404(ShortUrl, short_link=linkID)
+        return redirect(f'/api/recipes/{shorturl.shortlink.id}')

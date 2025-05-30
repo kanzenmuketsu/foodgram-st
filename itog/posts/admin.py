@@ -23,12 +23,17 @@ class RecipiAdmin(admin.ModelAdmin):
         'author'
     )
     inlines = [RecipiIngredientAmountInline]
-    readonly_fields = ('favorite_entries',)
+    readonly_fields = ('short_link', 'favorite_entries')
     search_fields = ('name', 'author')
 
     @admin.display(description='Добавлено в избранное')
     def favorite_entries(self, obj):
         return obj.favorite.count()
+
+    @admin.display(description='zxc в избранное')
+    def short_link(self, *args, **kwargs):
+        print('asdfasfd')
+        return {}
 
 
 admin.site.register(Ingredient, IngredientAdmin)

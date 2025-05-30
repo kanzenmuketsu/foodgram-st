@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.core.validators import MinValueValidator
+from itog.settings import BASE_URL, SHORT_LINK_URL
 
 
 class Ingredient(models.Model):
@@ -30,7 +30,7 @@ class RecipiIngredientAmount(models.Model):
         on_delete=models.CASCADE,
         related_name='amounttt'
     )
-    amount = models.FloatField(validators=[MinValueValidator(0.0)])
+    amount = models.FloatField()
 
     class Meta:
         constraints = [
@@ -38,6 +38,18 @@ class RecipiIngredientAmount(models.Model):
                 fields=["recipi", "Ingredient"], name="unique_Ing_recipi"
             )
         ]
+
+
+class ShortUrl(models.Model):
+    short_link = models.CharField(
+        verbose_name='Ссылка',
+        null=True,
+        blank=True,
+        default=None
+    )
+
+    def __str__(self):
+        return f'{BASE_URL}{SHORT_LINK_URL}{self.short_link}'
 
 
 class Recipi(models.Model):
@@ -64,6 +76,15 @@ class Recipi(models.Model):
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления',
         help_text="(в минутах)"
+    )
+    short_link = models.OneToOneField(
+        ShortUrl,
+        verbose_name='Короткая ссылка',
+        related_name='shortlink',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        default=None
     )
 
     class Meta:
