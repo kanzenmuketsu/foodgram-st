@@ -33,7 +33,9 @@ class CustomUserViewSet(UserViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        detail=True, methods=['post'], permission_classes=[IsAuthenticated]
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, *args, **kwargs):
         user = self.request.user
@@ -44,21 +46,33 @@ class CustomUserViewSet(UserViewSet):
                 {"subscribe": "Профиль не найден"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        limit = request.query_params.get('recipes_limit', None)
-        if limit:
-            limit = int(limit)
-
         if user == target:
             return Response(
                 {"subscribe": "Нельзя подписаться на себя"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if user in list(target.followers.all()):
+        if user not in list(target.followers.all()):
             return Response(
-                {"subscribe": "Вы уже подписаны"},
+                {"subscribe": f"Вы не были подписаны"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        if request.method == "DELETE":
+            target.followers.remove(user)
+            return Response(
+                {},
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        if user in list(target.followers.all()):
+            return Response(
+                {"subscribe": f"Вы уже подписаны"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        limit = request.query_params.get('recipes_limit', None)
+        if limit:
+            limit = int(limit)
+
         target.followers.add(user)
         serializer = self.get_serializer(
             target, data=request.data,

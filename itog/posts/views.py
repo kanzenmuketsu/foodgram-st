@@ -46,6 +46,14 @@ class RecipiViewSet(ModelViewSet):
             qset = []
         return qset
 
+    def destroy(self, request, *args, **kwargs):
+        if not request.user == self.get_object().author:
+            return Response(
+                {"recipi": "Вы не автор"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, *args, **kwargs):
         obj = self.get_object()
