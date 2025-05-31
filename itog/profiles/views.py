@@ -101,7 +101,24 @@ class CustomUserViewSet(UserViewSet):
         validated_data = paginator.paginate_queryset(validated_data, request)
         return paginator.get_paginated_response(validated_data)
 
-    @action(detail=False, methods=['get'])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated]
+    )
+    def favorite(self, request, *args, **kwargs):
+        paginator = LimitOffsetPagination()
+        bookmared = request.user.bookmared.all()
+        print(bookmared)
+        serializer = RecipiShortSerializer(bookmared, many=True)
+        bookmared = paginator.paginate_queryset(serializer.data, request)
+        return paginator.get_paginated_response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated]
+    )
     def cart(self, request, *args, **kwargs):
         paginator = LimitOffsetPagination()
         cart = request.user.cart.all()

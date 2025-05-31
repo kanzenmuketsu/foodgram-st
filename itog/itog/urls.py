@@ -21,8 +21,13 @@ from django.conf.urls.static import static
 from posts.views import RedirectShortLinkView
 from profiles.views import CustomUserViewSet
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(
+        'api/users/favorite/',
+        CustomUserViewSet.as_view({'get': 'favorite'})
+    ),
     path(
         'api/users/subscriptions/',
         CustomUserViewSet.as_view({'get': 'subscriptions'})

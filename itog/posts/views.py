@@ -74,22 +74,69 @@ class RecipiViewSet(ModelViewSet):
                 )
 
     @action(
-        detail=True, methods=['post'], permission_classes=[IsAuthenticated]
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
+    def favorite(self, request, *args, **kwargs):
+        obj = self.get_object()
+        serializer = RecipiShortSerializer(obj)
+        bookmared = request.user.bookmared
+        if request.method == 'POST':
+            if obj in list(bookmared.all()):
+                return Response(
+                    {"recipi": "Рецепт уже в избранном"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            bookmared.add(obj)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        if obj not in list(bookmared.all()):
+            return Response(
+                {"recipi": "Рецепт не в избранном"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        bookmared.remove(obj)
+        return Response(
+            serializer.data,
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, *args, **kwargs):
         obj = self.get_object()
         serializer = RecipiShortSerializer(obj)
         cart = request.user.cart
-        if obj in list(cart.all()):
+        if request.method == 'POST':
+            if obj in list(cart.all()):
+                return Response(
+                    {"recipi": "Рецепт уже в корзине"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            cart.add(obj)
             return Response(
-                {"recipi": "Рецепт уже в корзине"},
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        if obj not in list(cart.all()):
+            return Response(
+                {"recipi": "Рецепт не в корзине"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        cart.add(obj)
+        cart.remove(obj)
         return Response(
             serializer.data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_204_NO_CONTENT
         )
 
     @action(
