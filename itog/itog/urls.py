@@ -25,7 +25,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path(
         'api/users/subscriptions/',
-        CustomUserViewSet.as_view({'get': 'subscriptions'})),
+        CustomUserViewSet.as_view({'get': 'subscriptions'})
+    ),
+    path(
+        'api/users/cart/',
+        CustomUserViewSet.as_view({'get': 'cart'})
+    ),
     path('api/', include('api.urls')),
     path('s/<str:linkID>/', RedirectShortLinkView.as_view())
 ]

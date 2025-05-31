@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from itog.settings import BASE_URL, SHORT_LINK_URL
+from itog.settings import BASE_URL_SITE, SHORT_LINK_URL
 
 
 class Ingredient(models.Model):
@@ -49,7 +49,7 @@ class ShortUrl(models.Model):
     )
 
     def __str__(self):
-        return f'{BASE_URL}{SHORT_LINK_URL}{self.short_link}'
+        return f'{BASE_URL_SITE}{SHORT_LINK_URL}{self.short_link}'
 
 
 class Recipi(models.Model):

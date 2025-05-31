@@ -32,7 +32,9 @@ class CustomUserViewSet(UserViewSet):
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True, methods=['post'], permission_classes=[IsAuthenticated]
+    )
     def subscribe(self, request, *args, **kwargs):
         user = self.request.user
         try:
@@ -82,7 +84,7 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=False, methods=['get'])
     def subscriptions(self, request, *args, **kwargs):
         user = self.request.user
-        
+
         paginator = LimitOffsetPagination()
         recipes_limit = request.query_params.get('recipes_limit', None)
         if recipes_limit:
@@ -98,6 +100,16 @@ class CustomUserViewSet(UserViewSet):
 
         validated_data = paginator.paginate_queryset(validated_data, request)
         return paginator.get_paginated_response(validated_data)
+
+    @action(detail=False, methods=['get'])
+    def cart(self, request, *args, **kwargs):
+        paginator = LimitOffsetPagination()
+        cart = request.user.cart.all()
+
+        serializer = RecipiShortSerializer(cart, many=True)
+
+        cart = paginator.paginate_queryset(serializer.data, request)
+        return paginator.get_paginated_response(serializer.data)
 
     def add_recipes_field(self, validated_data, target, limit):
         recipes_count = target.recipi_author.count()

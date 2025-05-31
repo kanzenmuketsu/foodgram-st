@@ -3,11 +3,13 @@ from rest_framework.views import APIView
 from .models import Ingredient, Recipi, ShortUrl
 from .serializers import (
     IngredientSerializer, RecipiSerializer,
-    RecipiShortLinkSerializer
+    RecipiShortLinkSerializer, RecipiShortSerializer
 )
 
 from django.shortcuts import get_object_or_404, redirect
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
 import uuid
@@ -70,6 +72,62 @@ class RecipiViewSet(ModelViewSet):
                     serializer.data,
                     status=status.HTTP_200_OK
                 )
+
+    @action(
+        detail=True, methods=['post'], permission_classes=[IsAuthenticated]
+    )
+    def shopping_cart(self, request, *args, **kwargs):
+        obj = self.get_object()
+        serializer = RecipiShortSerializer(obj)
+        cart = request.user.cart
+        if obj in list(cart.all()):
+            return Response(
+                {"recipi": "Рецепт уже в корзине"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cart.add(obj)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(
+        detail=False, methods=['get'], permission_classes=[IsAuthenticated]
+    )
+    def download_shopping_cart(self, request, *args, **kwargs):
+        cart = request.user.cart.all()
+        if not cart:
+            return Response(
+                {"cart": "Корзина пуста"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        ings = dict()
+        for recipi in cart:
+            for rrr in recipi.RRR.all():
+                ing, amount = rrr.Ingredient.name, rrr.amount
+                unit = rrr.Ingredient.measurement_unit
+                if ing not in ings:
+                    ings[ing] = {'amount': 0, 'unit': ''}
+                    ings[ing]['amount'] = amount
+                    ings[ing]['unit'] = unit
+                else:
+                    ings[ing]['amount'] += amount
+
+        file_path = f'media/files/{request.user.username}_buylist.txt'
+        with open(file_path, 'w', encoding='utf-8') as file:
+            for name, props in ings.items():
+                print(
+                    f'--> {name} ~~~ {props['amount']} ({props['unit']})',
+                    file=file
+                )
+        FilePointer = open(file_path, "r", encoding='utf-8')
+        response = HttpResponse(
+            FilePointer, content_type='text/plain'
+        )
+        response['Content-Disposition'] = 'attachment; filename=buylist.txt'
+
+        return response
 
 
 class RedirectShortLinkView(APIView):

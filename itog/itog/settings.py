@@ -15,7 +15,7 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_URL = 'http://localhost:8000/'
+BASE_URL_SITE = 'http://localhost:8000/'
 SHORT_LINK_URL = 's/'
 
 MEDIA_URL = '/media/'

@@ -162,4 +162,4 @@ class RecipiShortLinkSerializer(ModelSerializer):
 
 class RecipiShortSerializer(RecipiSerializer):
     class Meta(RecipiSerializer.Meta):
-        fields = ('name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time')
