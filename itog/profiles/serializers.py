@@ -20,12 +20,7 @@ class UserSerializer(BaseUserRegistrationSerializer):
         )
 
     def get_is_subsribed(self, obj):
-        user = self._user(self)
+        user = self.context['request'].user
         if obj == user:
             return False
-        return obj.flws.filter(pk=user.id).exists()
-
-    def _user(self, obj):
-        request = self.context.get('request', None)
-        if request:
-            return request.user
+        return obj.followers.filter(pk=user.id).exists()

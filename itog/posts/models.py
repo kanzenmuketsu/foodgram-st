@@ -56,7 +56,8 @@ class Recipi(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name='Автор рецепта'
+        verbose_name='Автор рецепта',
+        related_name='recipi_author'
     )
     name = models.CharField(
         verbose_name='Название рецепта', max_length=128

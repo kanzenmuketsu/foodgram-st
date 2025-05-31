@@ -158,3 +158,8 @@ class RecipiShortLinkSerializer(ModelSerializer):
             'short_link',
         )
         read_only_fields = ('short_link',)
+
+
+class RecipiShortSerializer(RecipiSerializer):
+    class Meta(RecipiSerializer.Meta):
+        fields = ('name', 'image', 'cooking_time')
