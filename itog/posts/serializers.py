@@ -39,7 +39,7 @@ class IngWithAmountSerializer(ModelSerializer):
         raise ValidationError('error')
 
     def validate(self, data):
-        if data['amount'] < 1:
+        if int(data['amount']) < 1:
             raise ValidationError(
                 {'error': 'Количество ингредиента должна быть больше 1'}
             )
@@ -138,11 +138,7 @@ class RecipiSerializer(ModelSerializer):
                 raise ValidationError(
                     {'ingredients': 'ингредиенты не должны повторяться'}
                 )
-        if not data['image']:
-            raise ValidationError(
-                {'image': 'пустое фото'}
-            )
-        if data['cooking_time'] < 1:
+        if int(data['cooking_time']) < 1:
             raise ValidationError(
                 {'cooking_time': 'Время готовки не может быть меньше 1 мин'}
             )

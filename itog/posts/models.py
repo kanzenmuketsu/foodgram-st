@@ -64,7 +64,9 @@ class Recipi(models.Model):
     )
     image = models.ImageField(
         'Фото',
-        upload_to='recipi_images'
+        upload_to='recipi_images',
+        blank=False,
+        null=False
     )
     text = models.TextField(
         verbose_name='Описание', max_length=255
@@ -85,7 +87,7 @@ class Recipi(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        default=None
+        default=None,
     )
 
     class Meta:

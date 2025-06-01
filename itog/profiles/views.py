@@ -51,13 +51,13 @@ class CustomUserViewSet(UserViewSet):
                 {"subscribe": "Нельзя подписаться на себя"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if user not in list(target.followers.all()):
-            return Response(
-                {"subscribe": f"Вы не были подписаны"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         if request.method == "DELETE":
+            if user not in list(target.followers.all()):
+                return Response(
+                    {"subscribe": f"Вы не были подписаны"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             target.followers.remove(user)
             return Response(
                 {},

@@ -17,6 +17,7 @@ import uuid
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
+    pagination_class = None
 
     def get_queryset(self):
         name = self.request.query_params.get('name', False)
@@ -67,9 +68,8 @@ class RecipiViewSet(ModelViewSet):
             except Exception:
                 link = False
             if link:
-                print(serializer.data)
                 return Response(
-                    serializer.data,
+                    {'short-link': obj.short_link.__str__()},
                     status=status.HTTP_200_OK
                 )
             else:
@@ -77,7 +77,7 @@ class RecipiViewSet(ModelViewSet):
                 obj.short_link = ShortUrl.objects.create(short_link=short_link)
                 obj.save()
                 return Response(
-                    serializer.data,
+                    {'short-link': obj.short_link.__str__()},
                     status=status.HTTP_200_OK
                 )
 
@@ -173,7 +173,7 @@ class RecipiViewSet(ModelViewSet):
         with open(file_path, 'w', encoding='utf-8') as file:
             for name, props in ings.items():
                 print(
-                    f'--> {name} ~~~ {props['amount']} ({props['unit']})',
+                    f"--> {name} ~~~ {props['amount']} ({props['unit']})",
                     file=file
                 )
         FilePointer = open(file_path, "r", encoding='utf-8')
@@ -188,4 +188,4 @@ class RecipiViewSet(ModelViewSet):
 class RedirectShortLinkView(APIView):
     def get(self, request, linkID):
         shorturl = get_object_or_404(ShortUrl, short_link=linkID)
-        return redirect(f'/api/recipes/{shorturl.shortlink.id}')
+        return redirect(f'/recipes/{shorturl.shortlink.id}')

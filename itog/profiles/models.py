@@ -18,7 +18,8 @@ class Profile(AbstractUser):
     email = models.EmailField(
         max_length=64,
         blank=False,
-        null=False
+        null=False,
+        unique=True
     )
     avatar = models.ImageField(
         'Аватарка',
@@ -44,7 +45,9 @@ class Profile(AbstractUser):
         blank=True,
         symmetrical=False
     )
-    REQUIRED_FIELDS = ["first_name", "last_name", "email"]
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name", "username"]
 
     def __str__(self):
         return self.username
