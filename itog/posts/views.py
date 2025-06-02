@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import HttpResponse
+from wsgiref.util import FileWrapper
 from rest_framework import status
 from rest_framework.decorators import action
 import uuid
@@ -30,7 +31,7 @@ class RecipiViewSet(ModelViewSet):
     serializer_class = RecipiSerializer
 
     def get_queryset(self):
-        qset = Recipi.objects.all()
+        qset = Recipi.objects.all().order_by('-id')
         pk = self.request.query_params.get('author', False)
         bookmared = self.request.query_params.get('is_favorited', False)
         cart = self.request.query_params.get('is_in_shopping_cart', False)
@@ -176,9 +177,9 @@ class RecipiViewSet(ModelViewSet):
                     f"--> {name} ~~~ {props['amount']} ({props['unit']})",
                     file=file
                 )
-        FilePointer = open(file_path, "r", encoding='utf-8')
+        FilePointer = open(file_path, "rb")
         response = HttpResponse(
-            FilePointer, content_type='text/plain'
+            FileWrapper(FilePointer), content_type='application/txt'
         )
         response['Content-Disposition'] = 'attachment; filename=buylist.txt'
 

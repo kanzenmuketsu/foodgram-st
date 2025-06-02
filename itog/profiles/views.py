@@ -146,7 +146,7 @@ class CustomUserViewSet(UserViewSet):
         recipes_count = target.recipi_author.count()
         validated_data['recipes_count'] = recipes_count
 
-        recipes = target.recipi_author.all()
+        recipes = target.recipi_author.all().order_by('-id')
         serializer2 = RecipiShortSerializer(
             recipes,
             many=True,

@@ -56,8 +56,8 @@ class RecipiSerializer(ModelSerializer):
     image = Base64ImageField()
     ingredients = IngWithAmountSerializer(source='RRR', many=True)
     author = UserSerializer(read_only=True)
-    bookmared = SerializerMethodField()
-    cart = SerializerMethodField()
+    is_favorited = SerializerMethodField()
+    is_in_shopping_cart = SerializerMethodField()
 
     class Meta:
         model = Recipi
@@ -65,33 +65,31 @@ class RecipiSerializer(ModelSerializer):
             'id',
             'author',
             'ingredients',
-            'bookmared',
-            'cart',
+            'is_favorited',
+            'is_in_shopping_cart',
             'name',
             'image',
             'text',
             'cooking_time'
         )
-        read_only_fields = ('bookmared', 'cart', 'author')
+        read_only_fields = ('is_favorited', 'is_in_shopping_cart', 'author')
 
     def _user(self, obj):
         request = self.context.get('request', None)
         if request:
             return request.user
 
-    def get_cart(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         user = self._user(self)
         return obj.cart.filter(pk=user.id).exists()
 
-    def get_bookmared(self, obj):
+    def get_is_favorited(self, obj):
         user = self._user(self)
         return obj.bookmared.filter(pk=user.id).exists()
 
     def create(self, validated_data):
         user = self.context['request'].user
-        print(validated_data)
         ingredients = validated_data.pop('RRR', False)
-        print(ingredients)
         if not ingredients:
             raise ValidationError({'error': 'нужны ингредиенты'})
 
