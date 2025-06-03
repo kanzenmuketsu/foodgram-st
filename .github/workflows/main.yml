@@ -64,7 +64,6 @@ jobs:
   build-and-push-to-dockerhub-front:
     name: Push frontend to DockerHub
     runs-on: ubuntu-latest
-    needs: frontend_tests
     steps:
     - name: Check out
       uses: actions/checkout@v4
