@@ -55,7 +55,7 @@ class CustomUserViewSet(UserViewSet):
         if request.method == "DELETE":
             if user not in list(target.followers.all()):
                 return Response(
-                    {"subscribe": f"Вы не были подписаны"},
+                    {"subscribe": "Вы не были подписаны"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             target.followers.remove(user)
@@ -66,7 +66,7 @@ class CustomUserViewSet(UserViewSet):
 
         if user in list(target.followers.all()):
             return Response(
-                {"subscribe": f"Вы уже подписаны"},
+                {"subscribe": "Вы уже подписаны"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         limit = request.query_params.get('recipes_limit', None)
