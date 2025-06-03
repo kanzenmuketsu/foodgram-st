@@ -58,7 +58,7 @@ jobs:
     - name: Push to DockerHub
       uses: docker/build-push-action@v5
       with:
-        context: ./itog_backend/
+        context: ./itog/
         push: true
         tags: kanzenmuketsu/itog_back:latest
   build-and-push-to-dockerhub-front:
