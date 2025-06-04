@@ -1,14 +1,17 @@
 from rest_framework.serializers import (
     ModelSerializer, SerializerMethodField,
-    ValidationError, StringRelatedField
+    ValidationError, StringRelatedField, IntegerField
 )
 from .models import Ingredient, Recipi, RecipiIngredientAmount
 from drf_extra_fields.fields import Base64ImageField
 from profiles.serializers import UserSerializer
+from itog.settings import MIN_AMOUNT_FOR_RECIPI, MAX_AMOUNT_FOR_RECIPI
 
 
 class IngWithAmountSerializer(ModelSerializer):
-    amount = SerializerMethodField()
+    amount = IntegerField(
+        max_value=MAX_AMOUNT_FOR_RECIPI, min_value=MIN_AMOUNT_FOR_RECIPI
+    )
 
     class Meta:
         model = RecipiIngredientAmount
@@ -32,19 +35,6 @@ class IngWithAmountSerializer(ModelSerializer):
             'amount': data.amount
         }
 
-    def get_amount(self, data):
-        for ing in self.context['request'].data['ingredients']:
-            if ing['id'] == data.id:
-                return ing['amount']
-        raise ValidationError('error')
-
-    def validate(self, data):
-        if int(data['amount']) < 1:
-            raise ValidationError(
-                {'error': 'Количество ингредиента должна быть больше 1'}
-            )
-        return data
-
 
 class IngredientSerializer(ModelSerializer):
     class Meta:
@@ -54,7 +44,9 @@ class IngredientSerializer(ModelSerializer):
 
 class RecipiSerializer(ModelSerializer):
     image = Base64ImageField()
-    ingredients = IngWithAmountSerializer(source='RRR', many=True)
+    ingredients = IngWithAmountSerializer(
+        source='ingredientsWTamount', many=True
+    )
     author = UserSerializer(read_only=True)
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
@@ -89,17 +81,13 @@ class RecipiSerializer(ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        ingredients = validated_data.pop('RRR', False)
+        ingredients = validated_data.pop('ingredientsWTamount', False)
         if not ingredients:
             raise ValidationError({'error': 'нужны ингредиенты'})
 
         recipi = Recipi.objects.create(**validated_data, author=user)
 
-        for ing in ingredients:
-            d = dict(ing)
-            RecipiIngredientAmount.objects.create(
-                recipi=recipi, Ingredient=d['name'], amount=d['amount']
-            )
+        self.add_ingredients(recipi=recipi, ingredients=ingredients)
 
         return recipi
 
@@ -107,7 +95,7 @@ class RecipiSerializer(ModelSerializer):
         user = self.context['request'].user
         if not obj.author == user:
             raise ValidationError({'author': 'Вы не автор'})
-        ingredients = validated_data.pop('RRR', False)
+        ingredients = validated_data.pop('ingredientsWTamount', False)
         if not ingredients:
             raise ValidationError({'ingredients': 'нужны ингредиенты'})
 
@@ -115,31 +103,30 @@ class RecipiSerializer(ModelSerializer):
         obj = Recipi.objects.get(pk=recipi)
         obj.ingredients.clear()
 
-        for ing in ingredients:
-            d = dict(ing)
-            RecipiIngredientAmount.objects.create(
-                recipi=obj, Ingredient=d['name'], amount=d['amount']
-            )
+        self.add_ingredients(recipi=recipi, ingredients=ingredients)
 
         return obj
 
+    def add_ingredients(self, recipi, ingredients):
+        to_create = []
+        for ing in ingredients:
+            to_create.append(RecipiIngredientAmount(
+                recipi=recipi, Ingredient=ing['name'], amount=ing['amount']
+            ))
+        RecipiIngredientAmount.objects.bulk_create(to_create)
+
     def validate(self, data):
-        ings = set()
-        ingredients = data.get('RRR', False)
+        ingredients = data.get('ingredientsWTamount', False)
         if not ingredients:
             raise ValidationError({'ingredients': 'нужны ингредиенты'})
 
+        ings = set()
         for i in ingredients:
-            if i['name'] not in ings:
-                ings.add(i['name'])
-            else:
+            if i['name'] in ings:
                 raise ValidationError(
                     {'ingredients': 'ингредиенты не должны повторяться'}
                 )
-        if int(data['cooking_time']) < 1:
-            raise ValidationError(
-                {'cooking_time': 'Время готовки не может быть меньше 1 мин'}
-            )
+            ings.add(i['name'])
         return data
 
 

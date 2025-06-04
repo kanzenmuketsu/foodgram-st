@@ -19,18 +19,12 @@ class CustomUserViewSet(UserViewSet):
             user.avatar = None
             user.save()
             return Response({'status': 'avatar deleted'})
-        if serializer.is_valid():
-            avatar = serializer.validated_data.get('avatar', False)
-            if avatar:
-                user.avatar = avatar
-                user.save()
-                return Response({'status': 'avatar set'})
-            else:
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        avatar = serializer.validated_data.get('avatar', False)
+        if avatar:
+            user.avatar = avatar
+            user.save()
+            return Response({'status': 'avatar set'})
 
     @action(
         detail=True,
@@ -46,14 +40,18 @@ class CustomUserViewSet(UserViewSet):
                 {"subscribe": "Профиль не найден"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        #  Почему внутри view-функции не разрешено выполнять проверку?
+        #  Проверка до вызова serializer = нет лишней работы,
+        #  К тому же, запрос пустой. Что там сериализировать?
         if user == target:
             return Response(
                 {"subscribe": "Нельзя подписаться на себя"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        already_follow = target.followers.filter(pk=user.id).exists()
 
         if request.method == "DELETE":
-            if user not in list(target.followers.all()):
+            if not already_follow:
                 return Response(
                     {"subscribe": "Вы не были подписаны"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -63,12 +61,12 @@ class CustomUserViewSet(UserViewSet):
                 {},
                 status=status.HTTP_204_NO_CONTENT
             )
-
-        if user in list(target.followers.all()):
+        if already_follow:
             return Response(
                 {"subscribe": "Вы уже подписаны"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         limit = request.query_params.get('recipes_limit', None)
         if limit:
             limit = int(limit)
@@ -78,22 +76,17 @@ class CustomUserViewSet(UserViewSet):
             target, data=request.data,
             partial=True
         )
-        if serializer.is_valid():
-            validated_data = serializer.data
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.data
 
-            validated_data = self.add_recipes_field(
-                validated_data, target, limit
-            )
+        validated_data = self.add_recipes_field(
+            validated_data, target, limit
+        )
 
-            return Response(
-                validated_data,
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            validated_data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(detail=False, methods=['get'])
     def subscriptions(self, request, *args, **kwargs):
@@ -123,7 +116,6 @@ class CustomUserViewSet(UserViewSet):
     def favorite(self, request, *args, **kwargs):
         paginator = LimitOffsetPagination()
         bookmared = request.user.bookmared.all()
-        print(bookmared)
         serializer = RecipiShortSerializer(bookmared, many=True)
         bookmared = paginator.paginate_queryset(serializer.data, request)
         return paginator.get_paginated_response(serializer.data)
@@ -147,11 +139,11 @@ class CustomUserViewSet(UserViewSet):
         validated_data['recipes_count'] = recipes_count
 
         recipes = target.recipi_author.all().order_by('-id')
-        serializer2 = RecipiShortSerializer(
+        serializer = RecipiShortSerializer(
             recipes,
             many=True,
             context=self.get_serializer_context()
         )
-        validated_data['recipes'] = serializer2.data[:limit]
+        validated_data['recipes'] = serializer.data[:limit]
 
         return validated_data

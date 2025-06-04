@@ -1,6 +1,9 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
+
 from .models import Ingredient, Recipi, ShortUrl
+from .permissions import AuthorOrReadOnly
+
 from .serializers import (
     IngredientSerializer, RecipiSerializer,
     RecipiShortLinkSerializer, RecipiShortSerializer
@@ -10,7 +13,6 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import HttpResponse
-from wsgiref.util import FileWrapper
 from rest_framework import status
 from rest_framework.decorators import action
 import uuid
@@ -29,6 +31,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 class RecipiViewSet(ModelViewSet):
     serializer_class = RecipiSerializer
+    permission_classes = (AuthorOrReadOnly,)
 
     def get_queryset(self):
         qset = Recipi.objects.all().order_by('-id')
@@ -48,14 +51,6 @@ class RecipiViewSet(ModelViewSet):
             qset = []
         return qset
 
-    def destroy(self, request, *args, **kwargs):
-        if not request.user == self.get_object().author:
-            return Response(
-                {"recipi": "Вы не автор"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        return super().destroy(request, *args, **kwargs)
-
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -63,24 +58,24 @@ class RecipiViewSet(ModelViewSet):
             obj, data=request.data, partial=True
         )
 
-        if serializer.is_valid():
-            try:
-                link = obj.short_link
-            except Exception:
-                link = False
-            if link:
-                return Response(
-                    {'short-link': obj.short_link.__str__()},
-                    status=status.HTTP_200_OK
-                )
-            else:
-                short_link = uuid.uuid4().hex[:4]
-                obj.short_link = ShortUrl.objects.create(short_link=short_link)
-                obj.save()
-                return Response(
-                    {'short-link': obj.short_link.__str__()},
-                    status=status.HTTP_200_OK
-                )
+        serializer.is_valid(raise_exception=True)
+        try:
+            link = obj.short_link
+        except Exception:
+            link = False
+        if link:
+            return Response(
+                {'short-link': obj.short_link.__str__()},
+                status=status.HTTP_200_OK
+            )
+        else:
+            short_link = uuid.uuid4().hex[:4]
+            obj.short_link = ShortUrl.objects.create(short_link=short_link)
+            obj.save()
+            return Response(
+                {'short-link': obj.short_link.__str__()},
+                status=status.HTTP_200_OK
+            )
 
     @action(
         detail=True,
@@ -91,8 +86,10 @@ class RecipiViewSet(ModelViewSet):
         obj = self.get_object()
         serializer = RecipiShortSerializer(obj)
         bookmared = request.user.bookmared
+        already_bookmared = bookmared.filter(pk=obj.id).exists()
+
         if request.method == 'POST':
-            if obj in list(bookmared.all()):
+            if already_bookmared:
                 return Response(
                     {"recipi": "Рецепт уже в избранном"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -103,7 +100,7 @@ class RecipiViewSet(ModelViewSet):
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        if obj not in list(bookmared.all()):
+        if not already_bookmared:
             return Response(
                 {"recipi": "Рецепт не в избранном"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -124,8 +121,10 @@ class RecipiViewSet(ModelViewSet):
         obj = self.get_object()
         serializer = RecipiShortSerializer(obj)
         cart = request.user.cart
+        alreay_in_cart = cart.filter(pk=obj.id).exists()
+
         if request.method == 'POST':
-            if obj in list(cart.all()):
+            if alreay_in_cart:
                 return Response(
                     {"recipi": "Рецепт уже в корзине"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -136,7 +135,7 @@ class RecipiViewSet(ModelViewSet):
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        if obj not in list(cart.all()):
+        if not alreay_in_cart:
             return Response(
                 {"recipi": "Рецепт не в корзине"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -158,11 +157,11 @@ class RecipiViewSet(ModelViewSet):
                 {"cart": "Корзина пуста"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        ings = dict()
+        ings = {}
         for recipi in cart:
-            for rrr in recipi.RRR.all():
-                ing, amount = rrr.Ingredient.name, rrr.amount
-                unit = rrr.Ingredient.measurement_unit
+            for ing_dict in recipi.ingredientsWTamount.all():
+                ing, amount = ing_dict.Ingredient.name, ing_dict.amount
+                unit = ing_dict.Ingredient.measurement_unit
                 if ing not in ings:
                     ings[ing] = {'amount': 0, 'unit': ''}
                     ings[ing]['amount'] = amount
@@ -170,19 +169,8 @@ class RecipiViewSet(ModelViewSet):
                 else:
                     ings[ing]['amount'] += amount
 
-        file_path = f'media/files/{request.user.username}_buylist.txt'
-        with open(file_path, 'w', encoding='utf-8') as file:
-            for name, props in ings.items():
-                print(
-                    f"--> {name} ~~~ {props['amount']} ({props['unit']})",
-                    file=file
-                )
-        FilePointer = open(file_path, "rb")
-        response = HttpResponse(
-            FileWrapper(FilePointer), content_type='application/txt'
-        )
-        response['Content-Disposition'] = 'attachment; filename=buylist.txt'
-
+        content = "\n".join(ings)
+        response = HttpResponse(content, content_type="text/plain")
         return response
 
 

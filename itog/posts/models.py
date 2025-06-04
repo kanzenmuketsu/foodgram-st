@@ -12,7 +12,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'инградиент'
+        verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
@@ -23,14 +23,13 @@ class RecipiIngredientAmount(models.Model):
     recipi = models.ForeignKey(
         'Recipi',
         on_delete=models.CASCADE,
-        related_name='RRR'
+        related_name='ingredientsWTamount'
     )
     Ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.CASCADE,
-        related_name='amounttt'
+        on_delete=models.CASCADE
     )
-    amount = models.FloatField()
+    amount = models.PositiveSmallIntegerField()
 
     class Meta:
         constraints = [
@@ -76,7 +75,7 @@ class Recipi(models.Model):
         verbose_name='Список ингредиентов',
         through='RecipiIngredientAmount'
     )
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         help_text="(в минутах)"
     )

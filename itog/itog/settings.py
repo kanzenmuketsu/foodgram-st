@@ -73,7 +73,7 @@ CORS_ALLOWED_ORIGINS = [
 DJOSER = {
     'HIDE_USERS': False,
     'PERMISSIONS': {
-        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user': ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
         'user_list': ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
     },
     'SERIALIZERS': {
@@ -176,3 +176,7 @@ STATIC_ROOT = BASE_DIR / 'collected_static'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+MAX_AMOUNT_FOR_RECIPI = 250
+MIN_AMOUNT_FOR_RECIPI = 1
