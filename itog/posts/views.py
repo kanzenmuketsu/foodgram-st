@@ -168,8 +168,12 @@ class RecipiViewSet(ModelViewSet):
                     ings[ing]['unit'] = unit
                 else:
                     ings[ing]['amount'] += amount
-
-        content = "\n".join(ings)
+        content = ''
+        for name, props in ings.items():
+            content += (
+                f"{name} ~~~ {props['amount']} "
+                f"({props['unit']})\n"
+            )
         response = HttpResponse(content, content_type="text/plain")
         return response
 

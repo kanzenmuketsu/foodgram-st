@@ -99,11 +99,10 @@ class RecipiSerializer(ModelSerializer):
         if not ingredients:
             raise ValidationError({'ingredients': 'нужны ингредиенты'})
 
-        recipi = Recipi.objects.update(**validated_data)
-        obj = Recipi.objects.get(pk=recipi)
+        Recipi.objects.filter(pk=obj.id).update(**validated_data)
         obj.ingredients.clear()
 
-        self.add_ingredients(recipi=recipi, ingredients=ingredients)
+        self.add_ingredients(recipi=obj, ingredients=ingredients)
 
         return obj
 
